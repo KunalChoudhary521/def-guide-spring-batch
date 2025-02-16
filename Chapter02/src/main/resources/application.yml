@@ -1,0 +1,4 @@
+spring:
+  batch:
+    job:
+      enabled: true #enables JobLauncherCommandLineRunner to run a Job on application startup. Default value is true
