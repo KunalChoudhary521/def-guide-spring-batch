@@ -15,36 +15,34 @@
  */
 package com.example.Chapter04.jobs;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.SystemCommandTasklet;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class SystemCommandJob {
 
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
-
 //	@Bean
-//	public Job job() {
-//		return this.jobBuilderFactory.get("systemCommandJob")
-//				.start(systemCommandStep())
+//	public Job job(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("systemCommandJob", jobRepository)
+//				.start(systemCommandStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step systemCommandStep() {
-//		return this.stepBuilderFactory.get("systemCommandStep")
-//				.tasklet(systemCommandTasklet())
+//	public Step systemCommandStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("systemCommandStep", jobRepository)
+//				.tasklet(systemCommandTasklet(), platformTransactionManager)
 //				.build();
 //	}
 //

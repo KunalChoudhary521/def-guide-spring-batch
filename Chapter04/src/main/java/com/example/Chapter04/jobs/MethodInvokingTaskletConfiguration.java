@@ -16,38 +16,36 @@
 package com.example.Chapter04.jobs;
 
 import com.example.Chapter04.service.CustomService;
-
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.MethodInvokingTaskletAdapter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class MethodInvokingTaskletConfiguration {
 
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
-
 //	@Bean
-//	public Job methodInvokingJob() {
-//		return this.jobBuilderFactory.get("methodInvokingJob")
-//				.start(methodInvokingStep())
+//	public Job methodInvokingJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("methodInvokingJob", jobRepository)
+//				.start(methodInvokingStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step methodInvokingStep() {
-//		return this.stepBuilderFactory.get("methodInvokingStep")
-//				.tasklet(methodInvokingTasklet(null))
+//	public Step methodInvokingStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("methodInvokingStep", jobRepository)
+//				.tasklet(methodInvokingTasklet(null), platformTransactionManager)
 //				.build();
 //	}
 //

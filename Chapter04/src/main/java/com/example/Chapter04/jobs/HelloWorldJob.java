@@ -15,36 +15,33 @@
  */
 package com.example.Chapter04.jobs;
 
-import java.util.Arrays;
-
+import com.example.Chapter04.batch.DailyJobTimestamper;
+import com.example.Chapter04.batch.JobLoggerListener;
 import com.example.Chapter04.batch.ParameterValidator;
-
+import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.CompositeJobParametersValidator;
 import org.springframework.batch.core.job.DefaultJobParametersValidator;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.listener.JobListenerFactoryBean;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import java.util.Arrays;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class HelloWorldJob {
-
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
 
 	@Bean
 	public CompositeJobParametersValidator validator() {
@@ -65,29 +62,29 @@ public class HelloWorldJob {
 		return validator;
 	}
 
+	@Bean
+	public Job job(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+
+		return new JobBuilder("basicJob", jobRepository)
+				.start(step1(jobRepository, platformTransactionManager))
+				.validator(validator())
+				.incrementer(new DailyJobTimestamper())
+//				.listener(new JobLoggerListener())
+				.listener(JobListenerFactoryBean.getListener(new JobLoggerListener()))
+				.build();
+	}
+
 //	@Bean
-//	public Job job() {
-//
-//		return this.jobBuilderFactory.get("basicJob")
-//				.start(step1())
-//				.validator(validator())
-//				.incrementer(new DailyJobTimestamper())
-////				.listener(new JobLoggerListener())
-//				.listener(JobListenerFactoryBean.getListener(new JobLoggerListener()))
-//				.build();
-//	}
-//
-//	@Bean
-//	public Job job() {
-//		return this.jobBuilderFactory.get("basicJob")
-//				.start(step1())
+//	public Job job(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("basicJob", jobRepository)
+//				.start(step1(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 
 	@Bean
-	public Step step1() {
-		return this.stepBuilderFactory.get("step1")
-				.tasklet(helloWorldTasklet(null, null))
+	public Step step1(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+		return new StepBuilder("step1", jobRepository)
+				.tasklet(helloWorldTasklet(null, null), platformTransactionManager)
 				.build();
 	}
 

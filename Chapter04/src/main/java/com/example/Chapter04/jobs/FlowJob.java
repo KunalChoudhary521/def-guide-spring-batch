@@ -15,21 +15,25 @@
  */
 package com.example.Chapter04.jobs;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.FlowBuilder;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.job.flow.Flow;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class FlowJob {
-//
-//	@Autowired
-//	private JobBuilderFactory jobBuilderFactory;
-//
-//	@Autowired
-//	private StepBuilderFactory stepBuilderFactory;
 //
 //	@Bean
 //	public Tasklet loadStockFile() {
@@ -64,57 +68,58 @@ public class FlowJob {
 //	}
 //
 //	@Bean
-//	public Flow preProcessingFlow() {
-//		return new FlowBuilder<Flow>("preProcessingFlow").start(loadFileStep())
-//				.next(loadCustomerStep())
-//				.next(updateStartStep())
+//	public Flow preProcessingFlow(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new FlowBuilder<Flow>("preProcessingFlow")
+//				.start(loadFileStep(jobRepository, platformTransactionManager))
+//				.next(loadCustomerStep(jobRepository, platformTransactionManager))
+//				.next(updateStartStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Job conditionalStepLogicJob() {
-//		return this.jobBuilderFactory.get("conditionalStepLogicJob")
-//				.start(intializeBatch())
-//				.next(runBatch())
+//	public Job conditionalStepLogicJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("conditionalStepLogicJob", jobRepository)
+//				.start(initializeBatch(jobRepository, platformTransactionManager))
+//				.next(runBatch(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step intializeBatch() {
-//		return this.stepBuilderFactory.get("initalizeBatch")
-//				.flow(preProcessingFlow())
+//	public Step initializeBatch(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("initializeBatch", jobRepository)
+//				.flow(preProcessingFlow(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step loadFileStep() {
-//		return this.stepBuilderFactory.get("loadFileStep")
-//				.tasklet(loadStockFile())
+//	public Step loadFileStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("loadFileStep", jobRepository)
+//				.tasklet(loadStockFile(), platformTransactionManager)
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step loadCustomerStep() {
-//		return this.stepBuilderFactory.get("loadCustomerStep")
-//				.tasklet(loadCustomerFile())
+//	public Step loadCustomerStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("loadCustomerStep", jobRepository)
+//				.tasklet(loadCustomerFile(), platformTransactionManager)
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step updateStartStep() {
-//		return this.stepBuilderFactory.get("updateStartStep")
-//				.tasklet(updateStart())
+//	public Step updateStartStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("updateStartStep", jobRepository)
+//				.tasklet(updateStart(), platformTransactionManager)
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step runBatch() {
-//		return this.stepBuilderFactory.get("runBatch")
-//				.tasklet(runBatchTasklet())
+//	public Step runBatch(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("runBatch", jobRepository)
+//				.tasklet(runBatchTasklet(), platformTransactionManager)
 //				.build();
 //	}
 //
 //	public static void main(String[] args) {
-//		SpringApplication.run(HelloWorldJob.class, args);
+//		SpringApplication.run(FlowJob.class, args);
 //	}
 }

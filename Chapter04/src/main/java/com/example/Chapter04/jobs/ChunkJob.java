@@ -15,34 +15,47 @@
  */
 package com.example.Chapter04.jobs;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import com.example.Chapter04.batch.LoggingStepStartStopListener;
+import com.example.Chapter04.batch.RandomChunkSizePolicy;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.support.ListItemReader;
+import org.springframework.batch.repeat.CompletionPolicy;
+import org.springframework.batch.repeat.policy.CompositeCompletionPolicy;
+import org.springframework.batch.repeat.policy.SimpleCompletionPolicy;
+import org.springframework.batch.repeat.policy.TimeoutTerminationPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class ChunkJob {
 //
-//	@Autowired
-//	private JobBuilderFactory jobBuilderFactory;
-//
-//	@Autowired
-//	private StepBuilderFactory stepBuilderFactory;
-//
 //	@Bean
-//	public Job chunkBasedJob() {
-//		return this.jobBuilderFactory.get("chunkBasedJob")
-//				.start(chunkStep())
+//	public Job chunkBasedJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("chunkBasedJob", jobRepository)
+//				.start(chunkStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step chunkStep() {
-//		return this.stepBuilderFactory.get("chunkStep")
-////				.<String, String>chunk(1000)
-//				.<String, String>chunk(randomCompletionPolicy())
+//	public Step chunkStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("chunkStep", jobRepository)
+////				.<String, String>chunk(1000, platformTransactionManager)
+//				.<String, String>chunk(randomCompletionPolicy(), platformTransactionManager)
 //				.reader(itemReader())
 //				.writer(itemWriter())
 //				.listener(new LoggingStepStartStopListener())

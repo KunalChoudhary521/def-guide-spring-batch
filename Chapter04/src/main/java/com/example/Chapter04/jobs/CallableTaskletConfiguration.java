@@ -15,40 +15,37 @@
  */
 package com.example.Chapter04.jobs;
 
-import java.util.concurrent.Callable;
-
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.CallableTaskletAdapter;
 import org.springframework.batch.repeat.RepeatStatus;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import java.util.concurrent.Callable;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class CallableTaskletConfiguration {
 
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
-
 //	@Bean
-//	public Job callableJob() {
-//		return this.jobBuilderFactory.get("callableJob")
-//				.start(callableStep())
+//	public Job callableJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("callableJob", jobRepository)
+//				.start(callableStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
-//
+
 //	@Bean
-//	public Step callableStep() {
-//		return this.stepBuilderFactory.get("callableStep")
-//				.tasklet(tasklet())
+//	public Step callableStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("callableStep", jobRepository)
+//				.tasklet(tasklet(), platformTransactionManager)
 //				.build();
 //	}
 

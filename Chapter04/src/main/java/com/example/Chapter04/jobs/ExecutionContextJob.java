@@ -15,36 +15,35 @@
  */
 package com.example.Chapter04.jobs;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.Chapter04.batch.HelloWorldTasklet;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class ExecutionContextJob {
 
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
-
 //	@Bean
-//	public Job helloWorldBatchJob() {
-//		return this.jobBuilderFactory.get("helloWorldBatchJob")
-//				.start(helloWorldStep())
+//	public Job helloWorldBatchJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("helloWorldBatchJob", jobRepository)
+//				.start(helloWorldStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step helloWorldStep() {
-//		return this.stepBuilderFactory.get("helloWorldStep")
-//				.tasklet(tasklet())
+//	public Step helloWorldStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("helloWorldStep", jobRepository)
+//				.tasklet(tasklet(), platformTransactionManager)
 //				.build();
 //	}
 

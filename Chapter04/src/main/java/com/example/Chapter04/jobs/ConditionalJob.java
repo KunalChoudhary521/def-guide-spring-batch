@@ -15,21 +15,25 @@
  */
 package com.example.Chapter04.jobs;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import com.example.Chapter04.batch.RandomDecider;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.job.flow.JobExecutionDecider;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
+import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class ConditionalJob {
-//
-//	@Autowired
-//	private JobBuilderFactory jobBuilderFactory;
-//
-//	@Autowired
-//	private StepBuilderFactory stepBuilderFactory;
 //
 //	@Bean
 //	public Tasklet passTasklet() {
@@ -56,34 +60,34 @@ public class ConditionalJob {
 //	}
 //
 //	@Bean
-//	public Job job() {
-//		return this.jobBuilderFactory.get("conditionalJob")
-//				.start(firstStep())
-//				.on("FAILED").stopAndRestart(successStep())
-//				.from(firstStep())
-//					.on("*").to(successStep())
+//	public Job job(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("conditionalJob", jobRepository)
+//				.start(firstStep(jobRepository, platformTransactionManager))
+//				.on("FAILED").stopAndRestart(successStep(jobRepository, platformTransactionManager))
+//				.from(firstStep(jobRepository, platformTransactionManager))
+//					.on("*").to(successStep(jobRepository, platformTransactionManager))
 //				.end()
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step firstStep() {
-//		return this.stepBuilderFactory.get("firstStep")
-//				.tasklet(passTasklet())
+//	public Step firstStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("firstStep", jobRepository)
+//				.tasklet(passTasklet(), platformTransactionManager)
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step successStep() {
-//		return this.stepBuilderFactory.get("successStep")
-//				.tasklet(successTasklet())
+//	public Step successStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("successStep", jobRepository)
+//				.tasklet(successTasklet(), platformTransactionManager)
 //				.build();
 //	}
 //
 //	@Bean
-//	public Step failureStep() {
-//		return this.stepBuilderFactory.get("failureStep")
-//				.tasklet(failTasklet())
+//	public Step failureStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("failureStep", jobRepository)
+//				.tasklet(failTasklet(), platformTransactionManager)
 //				.build();
 //	}
 //

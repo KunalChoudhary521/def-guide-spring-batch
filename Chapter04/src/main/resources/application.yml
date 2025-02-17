@@ -4,6 +4,14 @@ spring:
     url: jdbc:mysql://localhost:3306/spring_batch
     username: root
     password: p@ssw0rd
+    hikari:
+      connection-test-query: SELECT 1
   batch:
-    initialize-schema: always
-spring.batch.job.names=conditionalStepLogicJob
+    jdbc:
+      initialize-schema: always
+    job:
+      name: conditionalStepLogicJob
+
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG #shows queries spring-batch runs to update batch related DB tables
