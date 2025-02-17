@@ -1,0 +1,17 @@
+# useful commands:
+# To build & run: > docker-compose up --build -d
+# To stop and remove image + volumes: > docker-compose down -v --rmi all
+# To enter container: > docker exec -it mysql-db bash
+version: "3.8"
+
+services:
+  mysql:
+    image: 'mysql:8.0.41' #source: https://hub.docker.com/_/mysql
+    container_name: 'mysql-db'
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: spring_batch
+      MYSQL_ROOT_PASSWORD: p@ssw0rd #root user is created by default
+    volumes:
+      - ./mysql-data:/var/lib/mysql
