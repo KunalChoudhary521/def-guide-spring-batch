@@ -2,7 +2,14 @@ spring:
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/spring_batch
-    username: 'root'
-    password: 'p@ssw0rd'
+    username: root
+    password: p@ssw0rd
+    hikari:
+      connection-test-query: SELECT 1
   batch:
-    initialize-schema: always
+    jdbc:
+      initialize-schema: always
+
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG #shows queries spring-batch runs to update batch related DB tables
