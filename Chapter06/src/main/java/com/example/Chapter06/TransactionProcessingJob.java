@@ -29,10 +29,10 @@ import com.example.Chapter06.domain.support.TransactionDaoSupport;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
@@ -47,12 +47,13 @@ import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.file.transform.FieldSet;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * 339599,2018-01-13 18:53:29,884.16
@@ -61,15 +62,8 @@ import org.springframework.core.io.Resource;
  *
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @SpringBootApplication
 public class TransactionProcessingJob {
-
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
 
 	@Bean
 	@StepScope
@@ -104,11 +98,12 @@ public class TransactionProcessingJob {
 	}
 
 	@Bean
-	public Step importTransactionFileStep() {
-		return this.stepBuilderFactory.get("importTransactionFileStep")
-				.<Transaction, Transaction>chunk(100)
+	public Step importTransactionFileStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager,
+										  DataSource dataSource) {
+		return new StepBuilder("importTransactionFileStep", jobRepository)
+				.<Transaction, Transaction>chunk(100, platformTransactionManager)
 				.reader(transactionReader())
-				.writer(transactionWriter(null))
+				.writer(transactionWriter(dataSource))
 				.allowStartIfComplete(true)
 				.listener(transactionReader())
 				.build();
@@ -142,8 +137,8 @@ public class TransactionProcessingJob {
 	}
 
 	@Bean
-	public TransactionApplierProcessor transactionApplierProcessor() {
-		return new TransactionApplierProcessor(transactionDao(null));
+	public TransactionApplierProcessor transactionApplierProcessor(DataSource dataSource) {
+		return new TransactionApplierProcessor(transactionDao(dataSource));
 	}
 
 	@Bean
@@ -159,19 +154,20 @@ public class TransactionProcessingJob {
 	}
 
 	@Bean
-	public Step applyTransactionsStep() {
-		return this.stepBuilderFactory.get("applyTransactionsStep")
-				.<AccountSummary, AccountSummary>chunk(100)
-				.reader(accountSummaryReader(null))
-				.processor(transactionApplierProcessor())
-				.writer(accountSummaryWriter(null))
+	public Step applyTransactionsStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager,
+									  DataSource dataSource) {
+		return new StepBuilder("applyTransactionsStep", jobRepository)
+				.<AccountSummary, AccountSummary>chunk(100, platformTransactionManager)
+				.reader(accountSummaryReader(dataSource))
+				.processor(transactionApplierProcessor(dataSource))
+				.writer(accountSummaryWriter(dataSource))
 				.build();
 	}
 
 	@Bean
 	@StepScope
 	public FlatFileItemWriter<AccountSummary> accountSummaryFileWriter(
-			@Value("#{jobParameters['summaryFile']}") Resource summaryFile) {
+			@Value("#{jobParameters['summaryFile']}") String summaryFile) {
 
 		DelimitedLineAggregator<AccountSummary> lineAggregator =
 				new DelimitedLineAggregator<>();
@@ -183,33 +179,39 @@ public class TransactionProcessingJob {
 
 		return new FlatFileItemWriterBuilder<AccountSummary>()
 				.name("accountSummaryFileWriter")
-				.resource(summaryFile)
+				.resource(new FileSystemResource(summaryFile))
 				.lineAggregator(lineAggregator)
 				.build();
 	}
 
 	@Bean
-	public Step generateAccountSummaryStep() {
-		return this.stepBuilderFactory.get("generateAccountSummaryStep")
-				.<AccountSummary, AccountSummary>chunk(100)
-				.reader(accountSummaryReader(null))
+	public Step generateAccountSummaryStep(JobRepository jobRepository,
+										   PlatformTransactionManager platformTransactionManager,
+										   DataSource dataSource) {
+		return new StepBuilder("generateAccountSummaryStep", jobRepository)
+				.<AccountSummary, AccountSummary>chunk(100, platformTransactionManager)
+				.reader(accountSummaryReader(dataSource))
 				.writer(accountSummaryFileWriter(null))
 				.build();
 	}
 
 	@Bean
-	public Job transactionJob() {
-		return this.jobBuilderFactory.get("transactionJob")
+	public Job transactionJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager,
+							  DataSource dataSource) {
+		return new JobBuilder("transactionJob", jobRepository)
 				.preventRestart()
-				.start(importTransactionFileStep())
-				.next(applyTransactionsStep())
-				.next(generateAccountSummaryStep())
+				.start(importTransactionFileStep(jobRepository, platformTransactionManager, dataSource))
+				.next(applyTransactionsStep(jobRepository, platformTransactionManager, dataSource))
+				.next(generateAccountSummaryStep(jobRepository, platformTransactionManager, dataSource))
 				.build();
-//		return this.jobBuilderFactory.get("transactionJob")
-//				.start(importTransactionFileStep())
-//				.on("STOPPED").stopAndRestart(importTransactionFileStep())
-//				.from(importTransactionFileStep()).on("*").to(applyTransactionsStep())
-//				.from(applyTransactionsStep()).next(generateAccountSummaryStep())
+//		return new JobBuilder("transactionJob", jobRepository)
+//				.start(importTransactionFileStep(jobRepository, platformTransactionManager, dataSource))
+//				.on("STOPPED").stopAndRestart(importTransactionFileStep(jobRepository, platformTransactionManager, dataSource))
+//				.from(importTransactionFileStep(jobRepository, platformTransactionManager, dataSource))
+//					.on("*")
+//					.to(applyTransactionsStep(jobRepository, platformTransactionManager, dataSource))
+//				.from(applyTransactionsStep(jobRepository, platformTransactionManager, dataSource))
+//					.next(generateAccountSummaryStep(jobRepository, platformTransactionManager, dataSource))
 //				.end()
 //				.build();
 	}
@@ -217,8 +219,8 @@ public class TransactionProcessingJob {
 	public static void main(String[] args) {
 		List<String> realArgs = new ArrayList<>(Arrays.asList(args));
 
-		realArgs.add("transactionFile=input/transactionFile.csv");
-		realArgs.add("summaryFile=file:///Users/mminella/tmp/summaryFile3.csv");
+		realArgs.add("transactionFile=classpath:/input/transactionFile.csv");
+		realArgs.add("summaryFile=Chapter06/target/test-outputs/summaryFile.csv");
 
 		SpringApplication.run(TransactionProcessingJob.class, realArgs.toArray(new String[realArgs.size()]));
 	}
