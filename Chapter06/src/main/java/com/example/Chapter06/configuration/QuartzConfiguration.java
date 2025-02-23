@@ -16,11 +16,11 @@
 package com.example.Chapter06.configuration;
 
 import com.example.Chapter06.quartz.BatchScheduledJob;
-import org.quartz.JobBuilder;
-import org.quartz.JobDetail;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
+//import org.quartz.JobBuilder;
+//import org.quartz.JobDetail;
+//import org.quartz.SimpleScheduleBuilder;
+//import org.quartz.Trigger;
+//import org.quartz.TriggerBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,25 +28,25 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author Michael Minella
  */
-@Configuration
+//@Configuration
 public class QuartzConfiguration {
-
-	@Bean
-	public JobDetail quartzJobDetail() {
-		return JobBuilder.newJob(BatchScheduledJob.class)
-				.storeDurably()
-				.build();
-	}
-
-	@Bean
-	public Trigger jobTrigger() {
-		SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
-				.withIntervalInSeconds(5).withRepeatCount(4);
-
-		return TriggerBuilder.newTrigger()
-				.forJob(quartzJobDetail())
-				.withSchedule(scheduleBuilder)
-				.build();
-	}
+//
+//	@Bean
+//	public JobDetail quartzJobDetail() {
+//		return JobBuilder.newJob(BatchScheduledJob.class)
+//				.storeDurably()
+//				.build();
+//	}
+//
+//	@Bean
+//	public Trigger jobTrigger() {
+//		SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
+//				.withIntervalInSeconds(5).withRepeatCount(4);
+//
+//		return TriggerBuilder.newTrigger()
+//				.forJob(quartzJobDetail())
+//				.withSchedule(scheduleBuilder)
+//				.build();
+//	}
 }
 
