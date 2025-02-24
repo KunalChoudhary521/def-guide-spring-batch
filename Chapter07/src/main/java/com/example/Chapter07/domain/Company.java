@@ -15,14 +15,13 @@
  */
 package com.example.Chapter07.domain;
 
-import org.neo4j.ogm.annotation.Property;
-
-import org.springframework.data.neo4j.annotation.QueryResult;
+import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Property;
 
 /**
  * @author Michael Minella
  */
-@QueryResult
+@Node
 public class Company {
 
 	@Property("s.companyName")

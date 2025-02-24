@@ -2,7 +2,7 @@ package com.example.Chapter07;
 
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.neo4j.Neo4jProperties;
+import org.springframework.boot.autoconfigure.neo4j.Neo4jProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 /**
