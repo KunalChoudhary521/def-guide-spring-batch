@@ -1,23 +1,32 @@
 package com.example.Chapter08;
 
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import com.example.Chapter08.domain.Customer;
+import com.example.Chapter08.domain.UniqueLastNameValidator;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.item.validator.ValidatingItemProcessor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.Resource;
+import org.springframework.transaction.PlatformTransactionManager;
 
-@EnableBatchProcessing
 @SpringBootApplication
 public class ValidationJob {
-//
-//
-//	@Autowired
-//	public JobBuilderFactory jobBuilderFactory;
-//
-//	@Autowired
-//	public StepBuilderFactory stepBuilderFactory;
 //
 //	@Bean
 //	@StepScope
 //	public FlatFileItemReader<Customer> customerItemReader(
-//			@Value("#{jobParameters['customerFile']}")Resource inputFile) {
+//            @Value("#{jobParameters['customerFile']}") Resource inputFile) {
 //
 //		return new FlatFileItemReaderBuilder<Customer>()
 //				.name("customerItemReader")
@@ -52,17 +61,17 @@ public class ValidationJob {
 //	public ValidatingItemProcessor<Customer> customerValidatingItemProcessor() {
 //		return new ValidatingItemProcessor<>(validator());
 //	}
-//
-////	@Bean
-////	public BeanValidatingItemProcessor<Customer> customerValidatingItemProcessor() {
-////		return new BeanValidatingItemProcessor<>();
-////	}
+
+//	@Bean
+//	public BeanValidatingItemProcessor<Customer> customerValidatingItemProcessor() {
+//		return new BeanValidatingItemProcessor<>();
+//	}
 //
 //	@Bean
-//	public Step copyFileStep() {
+//	public Step copyFileStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
 //
-//		return this.stepBuilderFactory.get("copyFileStep")
-//				.<Customer, Customer>chunk(5)
+//		return new StepBuilder("copyFileStep", jobRepository)
+//				.<Customer, Customer>chunk(5, platformTransactionManager)
 //				.reader(customerItemReader(null))
 //				.processor(customerValidatingItemProcessor())
 //				.writer(itemWriter())
@@ -71,10 +80,11 @@ public class ValidationJob {
 //	}
 //
 //	@Bean
-//	public Job job() throws Exception {
+//	public Job job(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
 //
-//		return this.jobBuilderFactory.get("job")
-//				.start(copyFileStep())
+//		return new JobBuilder("job", jobRepository)
+//				.start(copyFileStep(jobRepository, platformTransactionManager))
+//                .incrementer(new RunIdIncrementer())
 //				.build();
 //	}
 //
