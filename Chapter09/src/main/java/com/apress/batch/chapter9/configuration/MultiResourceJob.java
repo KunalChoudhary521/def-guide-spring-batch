@@ -15,24 +15,38 @@
  */
 package com.apress.batch.chapter9.configuration;
 
+import com.apress.batch.chapter9.batch.CustomerOutputFileSuffixCreator;
+import com.apress.batch.chapter9.batch.CustomerXmlHeaderCallback;
+import com.apress.batch.chapter9.domain.Customer;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.database.JdbcCursorItemReader;
+import org.springframework.batch.item.database.builder.JdbcCursorItemReaderBuilder;
+import org.springframework.batch.item.file.MultiResourceItemWriter;
+import org.springframework.batch.item.file.builder.MultiResourceItemWriterBuilder;
+import org.springframework.batch.item.xml.StaxEventItemWriter;
+import org.springframework.batch.item.xml.builder.StaxEventItemWriterBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.oxm.xstream.XStreamMarshaller;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Michael Minella
  */
 @Configuration
 public class MultiResourceJob {
-//
-//	private JobBuilderFactory jobBuilderFactory;
-//
-//	private StepBuilderFactory stepBuilderFactory;
-//
-//	public MultiResourceJob(JobBuilderFactory jobBuilderFactory,
-//			StepBuilderFactory stepBuilderFactory) {
-//
-//		this.jobBuilderFactory = jobBuilderFactory;
-//		this.stepBuilderFactory = stepBuilderFactory;
-//	}
 //
 //	@Bean
 //	public JdbcCursorItemReader<Customer> customerJdbcCursorItemReader(DataSource dataSource) {
@@ -52,7 +66,7 @@ public class MultiResourceJob {
 //				.name("multiCustomerFileWriter")
 //				.delegate(delegateItemWriter(null))
 //				.itemCountLimitPerResource(25)
-//				.resource(new FileSystemResource("Chapter09/target/customer"))
+//				.resource(new FileSystemResource("Chapter09/target/test-outputs/customer"))
 //				.resourceSuffixCreator(suffixCreator)
 //				.build();
 //	}
@@ -79,18 +93,19 @@ public class MultiResourceJob {
 //	}
 //
 //	@Bean
-//	public Step multiXmlGeneratorStep() throws Exception {
-//		return this.stepBuilderFactory.get("multiXmlGeneratorStep")
-//				.<Customer, Customer>chunk(10)
+//	public Step multiXmlGeneratorStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) throws Exception {
+//		return new StepBuilder("multiXmlGeneratorStep" ,jobRepository)
+//				.<Customer, Customer>chunk(10, platformTransactionManager)
 //				.reader(customerJdbcCursorItemReader(null))
 //				.writer(multiCustomerFileWriter(null))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Job xmlGeneratorJob() throws Exception {
-//		return this.jobBuilderFactory.get("xmlGeneratorJob")
-//				.start(multiXmlGeneratorStep())
+//	public Job xmlGeneratorJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) throws Exception {
+//		return new JobBuilder("xmlGeneratorJob", jobRepository)
+//				.incrementer(new RunIdIncrementer())
+//				.start(multiXmlGeneratorStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 }

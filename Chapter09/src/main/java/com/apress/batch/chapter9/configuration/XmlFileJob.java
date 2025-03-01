@@ -15,7 +15,28 @@
  */
 package com.apress.batch.chapter9.configuration;
 
+import com.apress.batch.chapter9.domain.Customer;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.item.xml.StaxEventItemWriter;
+import org.springframework.batch.item.xml.builder.StaxEventItemWriterBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.oxm.xstream.XStreamMarshaller;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Michael Minella
@@ -23,21 +44,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class XmlFileJob {
 //
-//	private JobBuilderFactory jobBuilderFactory;
-//
-//	private StepBuilderFactory stepBuilderFactory;
-//
-//	public XmlFileJob(JobBuilderFactory jobBuilderFactory,
-//			StepBuilderFactory stepBuilderFactory) {
-//
-//		this.jobBuilderFactory = jobBuilderFactory;
-//		this.stepBuilderFactory = stepBuilderFactory;
-//	}
-//
 //	@Bean
 //	@StepScope
 //	public FlatFileItemReader<Customer> customerFileReader(
-//			@Value("#{jobParameters['customerFile']}")Resource inputFile) {
+//			@Value("#{jobParameters['customerFile']}") Resource inputFile) {
 //
 //		return new FlatFileItemReaderBuilder<Customer>()
 //				.name("customerFileReader")
@@ -57,7 +67,7 @@ public class XmlFileJob {
 //	@Bean
 //	@StepScope
 //	public StaxEventItemWriter<Customer> xmlCustomerWriter(
-//			@Value("#{jobParameters['outputFile']}") Resource outputFile) {
+//			@Value("#{jobParameters['outputFile']}") FileSystemResource outputFile) {
 //
 //		Map<String, Class> aliases = new HashMap<>();
 //		aliases.put("customer", Customer.class);
@@ -77,18 +87,19 @@ public class XmlFileJob {
 //	}
 //
 //	@Bean
-//	public Step xmlFormatStep() throws Exception {
-//		return this.stepBuilderFactory.get("xmlFormatStep")
-//				.<Customer, Customer>chunk(10)
+//	public Step xmlFormatStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("xmlFormatStep", jobRepository)
+//				.<Customer, Customer>chunk(10, platformTransactionManager)
 //				.reader(customerFileReader(null))
 //				.writer(xmlCustomerWriter(null))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Job xmlFormatJob() throws Exception {
-//		return this.jobBuilderFactory.get("xmlFormatJob")
-//				.start(xmlFormatStep())
+//	public Job xmlFormatJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("xmlFormatJob", jobRepository)
+//				.start(xmlFormatStep(jobRepository, platformTransactionManager))
+//                .incrementer(new RunIdIncrementer())
 //				.build();
 //	}
 }

@@ -15,84 +15,92 @@
  */
 package com.apress.batch.chapter9.configuration;
 
+import com.apress.batch.chapter9.domain.Customer;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.FlatFileItemWriter;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.transaction.PlatformTransactionManager;
+
 
 /**
  * @author Michael Minella
  */
 @Configuration
 public class FormattedTextFileJob {
+
+	@Bean
+	@StepScope
+	public FlatFileItemReader<Customer> customerFileReader(
+			@Value("#{jobParameters['customerFile']}") Resource inputFile) {
+
+		return new FlatFileItemReaderBuilder<Customer>()
+				.name("customerFileReader")
+				.resource(inputFile)
+				.delimited()
+				.names(new String[] {"firstName",
+						"middleInitial",
+						"lastName",
+						"address",
+						"city",
+						"state",
+						"zip"})
+				.targetType(Customer.class)
+				.build();
+	}
+
+	@Bean
+	@StepScope
+	public FlatFileItemWriter<Customer> customerItemWriter(
+			@Value("#{jobParameters['outputFile']}") FileSystemResource outputFile) {
+
+//		BeanWrapperFieldExtractor<Customer> fieldExtractor = new BeanWrapperFieldExtractor<>();
 //
-//	private JobBuilderFactory jobBuilderFactory;
+//		fieldExtractor.setNames(new String[] {"firstName", "lastName", "address", "city", "state", "zip"});
 //
-//	private StepBuilderFactory stepBuilderFactory;
+//		fieldExtractor.afterPropertiesSet();
 //
-//	public FormattedTextFileJob(JobBuilderFactory jobBuilderFactory,
-//			StepBuilderFactory stepBuilderFactory) {
+//		FormatterLineAggregator<Customer> lineAggregator = new FormatterLineAggregator<>();
 //
-//		this.jobBuilderFactory = jobBuilderFactory;
-//		this.stepBuilderFactory = stepBuilderFactory;
-//	}
-//
-//	@Bean
-//	@StepScope
-//	public FlatFileItemReader<Customer> customerFileReader(
-//			@Value("#{jobParameters['customerFile']}")Resource inputFile) {
-//
-//		return new FlatFileItemReaderBuilder<Customer>()
-//				.name("customerFileReader")
-//				.resource(inputFile)
-//				.delimited()
-//				.names(new String[] {"firstName",
-//						"middleInitial",
-//						"lastName",
-//						"address",
-//						"city",
-//						"state",
-//						"zip"})
-//				.targetType(Customer.class)
-//				.build();
-//	}
-//
-//	@Bean
-//	@StepScope
-//	public FlatFileItemWriter<Customer> customerItemWriter(
-//			@Value("#{jobParameters['outputFile']}") Resource outputFile) {
-//
-////		BeanWrapperFieldExtractor<Customer> fieldExtractor = new BeanWrapperFieldExtractor<>();
-////
-////		fieldExtractor.setNames(new String[] {"firstName", "lastName", "address", "city", "state", "zip"});
-////
-////		fieldExtractor.afterPropertiesSet();
-////
-////		FormatterLineAggregator<Customer> lineAggregator = new FormatterLineAggregator<>();
-////
-////		lineAggregator.setFieldExtractor(fieldExtractor);
-////		lineAggregator.setFormat("%s %s lives at %s %s in %s, %s.");
-//
-//		return new FlatFileItemWriterBuilder<Customer>()
-//				.name("customerItemWriter")
-//				.resource(outputFile)
-//				.formatted()
-//				.format("%s %s lives at %s %s in %s, %s.")
-//				.names(new String[] {"firstName", "lastName", "address", "city", "state", "zip"})
-////				.lineAggregator(lineAggregator)
-//				.build();
-//	}
-//
-//	@Bean
-//	public Step formatStep() {
-//		return this.stepBuilderFactory.get("formatStep")
-//				.<Customer, Customer>chunk(10)
-//				.reader(customerFileReader(null))
-//				.writer(customerItemWriter(null))
-//				.build();
-//	}
-//
-//	@Bean
-//	public Job formatJob() {
-//		return this.jobBuilderFactory.get("formatJob")
-//				.start(formatStep())
-//				.build();
-//	}
+//		lineAggregator.setFieldExtractor(fieldExtractor);
+//		lineAggregator.setFormat("%s %s lives at %s %s in %s, %s.");
+
+		return new FlatFileItemWriterBuilder<Customer>()
+				.name("customerItemWriter")
+				.resource(outputFile)
+				.formatted()
+				.format("%s %s lives at %s %s in %s, %s.")
+				.names(new String[] {"firstName", "lastName", "address", "city", "state", "zip"})
+//				.lineAggregator(lineAggregator)
+				.build();
+	}
+
+	@Bean
+	public Step formatStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+		return new StepBuilder("formatStep", jobRepository)
+				.<Customer, Customer>chunk(10, platformTransactionManager)
+				.reader(customerFileReader(null))
+				.writer(customerItemWriter(null))
+				.build();
+	}
+
+	@Bean
+	public Job formatJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+		return new JobBuilder("formatJob", jobRepository)
+                .incrementer(new RunIdIncrementer())
+				.start(formatStep(jobRepository, platformTransactionManager))
+				.build();
+	}
 }

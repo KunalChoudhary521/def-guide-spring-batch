@@ -15,7 +15,24 @@
  */
 package com.apress.batch.chapter9.configuration;
 
+import com.apress.batch.chapter9.domain.Customer;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.FlatFileItemWriter;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Michael Minella
@@ -23,21 +40,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DelimitedFileJob {
 //
-//	private JobBuilderFactory jobBuilderFactory;
-//
-//	private StepBuilderFactory stepBuilderFactory;
-//
-//	public DelimitedFileJob(JobBuilderFactory jobBuilderFactory,
-//			StepBuilderFactory stepBuilderFactory) {
-//
-//		this.jobBuilderFactory = jobBuilderFactory;
-//		this.stepBuilderFactory = stepBuilderFactory;
-//	}
-//
 //	@Bean
 //	@StepScope
 //	public FlatFileItemReader<Customer> customerFileReader(
-//			@Value("#{jobParameters['customerFile']}")Resource inputFile) {
+//			@Value("#{jobParameters['customerFile']}") Resource inputFile) {
 //
 //		return new FlatFileItemReaderBuilder<Customer>()
 //				.name("customerFileReader")
@@ -57,7 +63,7 @@ public class DelimitedFileJob {
 //	@Bean
 //	@StepScope
 //	public FlatFileItemWriter<Customer> customerItemWriter(
-//			@Value("#{jobParameters['outputFile']}") Resource outputFile) {
+//			@Value("#{jobParameters['outputFile']}") FileSystemResource outputFile) {
 //
 //		return new FlatFileItemWriterBuilder<Customer>()
 //				.name("customerItemWriter")
@@ -75,18 +81,18 @@ public class DelimitedFileJob {
 //	}
 //
 //	@Bean
-//	public Step delimitedStep() {
-//		return this.stepBuilderFactory.get("delimitedStep")
-//				.<Customer, Customer>chunk(10)
+//	public Step delimitedStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("delimitedStep", jobRepository)
+//				.<Customer, Customer>chunk(10, platformTransactionManager)
 //				.reader(customerFileReader(null))
 //				.writer(customerItemWriter(null))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Job delimitedJob() {
-//		return this.jobBuilderFactory.get("delimitedJob")
-//				.start(delimitedStep())
+//	public Job delimitedJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("delimitedJob", jobRepository)
+//				.start(delimitedStep(jobRepository, platformTransactionManager))
 //				.incrementer(new RunIdIncrementer())
 //				.build();
 //	}

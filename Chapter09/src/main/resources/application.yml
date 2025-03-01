@@ -1,16 +1,15 @@
 spring:
   batch:
-    initialize-schema: always
+    jdbc:
+      initialize-schema: always
     job:
-      names: emailJob
+      enabled: true
+    # name: emailJob
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/spring_batch
     username: 'root'
     password: 'p@ssw0rd'
-    initialization-mode: always
-#    continue-on-error: true
-    platform: mysql
   jms:
     template:
       default-destination: customers
@@ -29,6 +28,11 @@ spring:
           auth: true
           starttls:
             enable: true
+  sql:
+    init:
+      mode: never
+      continue-on-error: true
+      platform: mysql
   jpa:
     properties:
       hibernate:
@@ -42,3 +46,7 @@ spring:
       embedded:
         enabled: false
       uri: bolt://localhost:7687
+#logging:
+#  level:
+#    org:
+#      springframework: DEBUG

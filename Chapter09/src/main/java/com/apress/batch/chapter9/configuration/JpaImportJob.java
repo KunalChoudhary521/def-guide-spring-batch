@@ -15,7 +15,23 @@
  */
 package com.apress.batch.chapter9.configuration;
 
+import com.apress.batch.chapter9.domain.Customer;
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.database.JpaItemWriter;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Michael Minella
@@ -23,21 +39,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JpaImportJob {
 //
-//	private JobBuilderFactory jobBuilderFactory;
-//
-//	private StepBuilderFactory stepBuilderFactory;
-//
-//	public JpaImportJob(JobBuilderFactory jobBuilderFactory,
-//			StepBuilderFactory stepBuilderFactory) {
-//
-//		this.jobBuilderFactory = jobBuilderFactory;
-//		this.stepBuilderFactory = stepBuilderFactory;
-//	}
-//
 //	@Bean
 //	@StepScope
 //	public FlatFileItemReader<Customer> customerFileReader(
-//			@Value("#{jobParameters['customerFile']}")Resource inputFile) {
+//			@Value("#{jobParameters['customerFile']}") Resource inputFile) {
 //
 //		return new FlatFileItemReaderBuilder<Customer>()
 //				.name("customerFileReader")
@@ -64,18 +69,19 @@ public class JpaImportJob {
 //	}
 //
 //	@Bean
-//	public Step jpaFormatStep() throws Exception {
-//		return this.stepBuilderFactory.get("jpaFormatStep")
-//				.<Customer, Customer>chunk(10)
+//	public Step jpaFormatStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("jpaFormatStep", jobRepository)
+//				.<Customer, Customer>chunk(10, platformTransactionManager)
 //				.reader(customerFileReader(null))
 //				.writer(jpaItemWriter(null))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Job jpaFormatJob() throws Exception {
-//		return this.jobBuilderFactory.get("jpaFormatJob")
-//				.start(jpaFormatStep())
+//	public Job jpaFormatJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("jpaFormatJob", jobRepository)
+//                .incrementer(new RunIdIncrementer())
+//				.start(jpaFormatStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 }

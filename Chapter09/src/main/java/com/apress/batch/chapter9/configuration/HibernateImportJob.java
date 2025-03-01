@@ -15,7 +15,22 @@
  */
 package com.apress.batch.chapter9.configuration;
 
+import com.apress.batch.chapter9.domain.Customer;
+import jakarta.persistence.EntityManagerFactory;
+import org.hibernate.SessionFactory;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * @author Michael Minella
@@ -23,21 +38,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class HibernateImportJob {
 //
-//	private JobBuilderFactory jobBuilderFactory;
-//
-//	private StepBuilderFactory stepBuilderFactory;
-//
-//	public HibernateImportJob(JobBuilderFactory jobBuilderFactory,
-//			StepBuilderFactory stepBuilderFactory) {
-//
-//		this.jobBuilderFactory = jobBuilderFactory;
-//		this.stepBuilderFactory = stepBuilderFactory;
-//	}
-//
 //	@Bean
 //	@StepScope
 //	public FlatFileItemReader<Customer> customerFileReader(
-//			@Value("#{jobParameters['customerFile']}")Resource inputFile) {
+//			@Value("#{jobParameters['customerFile']}") Resource inputFile) {
 //
 //		return new FlatFileItemReaderBuilder<Customer>()
 //				.name("customerFileReader")
@@ -62,18 +66,18 @@ public class HibernateImportJob {
 //	}
 //
 //	@Bean
-//	public Step hibernateFormatStep() throws Exception {
-//		return this.stepBuilderFactory.get("hibernateFormatStep")
-//				.<Customer, Customer>chunk(10)
+//	public Step hibernateFormatStep(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new StepBuilder("hibernateFormatStep", jobRepository)
+//				.<Customer, Customer>chunk(10, platformTransactionManager)
 //				.reader(customerFileReader(null))
 //				.writer(hibernateItemWriter(null))
 //				.build();
 //	}
 //
 //	@Bean
-//	public Job hibernateFormatJob() throws Exception {
-//		return this.jobBuilderFactory.get("hibernateFormatJob")
-//				.start(hibernateFormatStep())
+//	public Job hibernateFormatJob(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+//		return new JobBuilder("hibernateFormatJob", jobRepository)
+//				.start(hibernateFormatStep(jobRepository, platformTransactionManager))
 //				.build();
 //	}
 }
