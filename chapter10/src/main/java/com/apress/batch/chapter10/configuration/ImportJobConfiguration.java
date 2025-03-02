@@ -34,11 +34,11 @@ import com.apress.batch.chapter10.domain.Transaction;
 
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
@@ -56,7 +56,6 @@ import org.springframework.batch.item.support.ClassifierCompositeItemWriter;
 import org.springframework.batch.item.validator.ValidatingItemProcessor;
 import org.springframework.batch.item.xml.StaxEventItemReader;
 import org.springframework.batch.item.xml.builder.StaxEventItemReaderBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,36 +63,31 @@ import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.StringUtils;
 
 /**
  * @author Michael Minella
  */
-@EnableBatchProcessing
 @Configuration
 public class ImportJobConfiguration {
 
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
-
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
-
 	@Bean
-	public Job job() throws Exception {
-		return this.jobBuilderFactory.get("importJob")
+	public Job job(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) throws Exception {
+		return new JobBuilder("importJob", jobRepository)
 				.incrementer(new RunIdIncrementer())
-				.start(importCustomerUpdates())
-				.next(importTransactions())
-				.next(applyTransactions())
-				.next(generateStatements(null))
+				.start(importCustomerUpdates(jobRepository, platformTransactionManager))
+				.next(importTransactions(jobRepository, platformTransactionManager))
+				.next(applyTransactions(jobRepository, platformTransactionManager))
+				.next(generateStatements(jobRepository, platformTransactionManager, null))
 				.build();
 	}
 
 	@Bean
-	public Step importCustomerUpdates() throws Exception {
-		return this.stepBuilderFactory.get("importCustomerUpdates")
-				.<CustomerUpdate, CustomerUpdate>chunk(100)
+	public Step importCustomerUpdates(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager)
+			throws Exception {
+		return new StepBuilder("importCustomerUpdates", jobRepository)
+				.<CustomerUpdate, CustomerUpdate>chunk(100, platformTransactionManager)
 				.reader(customerUpdateItemReader(null))
 				.processor(customerValidatingItemProcessor(null))
 				.writer(customerUpdateItemWriter())
@@ -247,9 +241,9 @@ public class ImportJobConfiguration {
 	}
 
 	@Bean
-	public Step importTransactions() {
-		return this.stepBuilderFactory.get("importTransactions")
-				.<Transaction, Transaction>chunk(100)
+	public Step importTransactions(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+		return new StepBuilder("importTransactions", jobRepository)
+				.<Transaction, Transaction>chunk(100, platformTransactionManager)
 				.reader(transactionItemReader(null))
 				.writer(transactionItemWriter(null))
 				.build();
@@ -289,9 +283,9 @@ public class ImportJobConfiguration {
 	}
 
 	@Bean
-	public Step applyTransactions() {
-		return this.stepBuilderFactory.get("applyTransactions")
-				.<Transaction, Transaction>chunk(100)
+	public Step applyTransactions(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager) {
+		return new StepBuilder("applyTransactions", jobRepository)
+				.<Transaction, Transaction>chunk(100, platformTransactionManager)
 				.reader(applyTransactionReader(null))
 				.writer(applyTransactionWriter(null))
 				.faultTolerant().skip(Exception.class).skipLimit(2000)
@@ -334,9 +328,10 @@ public class ImportJobConfiguration {
 	}
 
 	@Bean
-	public Step generateStatements(AccountItemProcessor itemProcessor) {
-		return this.stepBuilderFactory.get("generateStatements")
-				.<Statement, Statement>chunk(1)
+	public Step generateStatements(JobRepository jobRepository, PlatformTransactionManager platformTransactionManager,
+								   AccountItemProcessor itemProcessor) {
+		return new StepBuilder("generateStatements", jobRepository)
+				.<Statement, Statement>chunk(1, platformTransactionManager)
 				.reader(statementItemReader(null))
 				.processor(itemProcessor)
 				.writer(statementItemWriter(null))
